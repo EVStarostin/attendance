@@ -3,9 +3,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const router = express.Router();
 
-const attendanceSchema = new mongoose.Schema({
-  date: { type: Date, default: Date.now },
-  visitors: [{ type: Schema.Types.ObjectId, ref: 'Visitor' }],
+const attendanceSchema = new mongoose.Schema(
+  {
+    date: { type: Date, default: Date.now },
+    visitors: [{ type: Schema.Types.ObjectId, ref: 'Visitor' }],
+    others: { type: Number, default: 0 },
+  },
+  {
+    toJSON: { virtuals: true },
+  }
+);
+attendanceSchema.virtual('total').get(function () {
+  return this.visitors.length + this.others;
 });
 const Attendance = mongoose.model('Attendance', attendanceSchema);
 
