@@ -1,30 +1,31 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 const router = express.Router();
 
-const visitorSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  archived: { type: Boolean, default: false },
+const attendanceSchema = new mongoose.Schema({
+  date: { type: Date, default: Date.now },
+  visitors: [{ type: Schema.Types.ObjectId, ref: 'Visitor' }],
 });
-const Visitor = mongoose.model('Visitor', visitorSchema);
+const Attendance = mongoose.model('Attendance', attendanceSchema);
 
-/* GET visitors list */
+/* GET attendance */
 router.get('/', function(req, res, next) {
-  const conditions = { archived: false };
-
-  Visitor.find(conditions, function (err, visitors) {
+  Attendance.find().
+  populate('visitors', 'name').
+  exec(function (err, data) {
     if (err) return console.error(err);
-    res.json(visitors);
+    res.json(data);
   })
 });
 
-/* ADD visitor */
+/* ADD attendance */
 router.post('/', function(req, res, next) {
-  const visitor = new Visitor(req.body);
+  const attendance = new Attendance(req.body);
 
-  visitor.save(function (err, visitor) {
+  attendance.save(function (err, data) {
     if (err) return console.error(err);
-    res.json(visitor);
+    res.json(data);
   });
 });
 
