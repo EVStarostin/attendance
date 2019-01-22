@@ -4,10 +4,13 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var visitorsRouter = require('./routes/visitors');
 
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/attendancedb', { useNewUrlParser: true });
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
+mongoose.connect('mongodb://localhost/attendancedb');
 
 var app = express();
 
@@ -17,6 +20,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/api', indexRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/visitors', visitorsRouter);
 
 module.exports = app;
