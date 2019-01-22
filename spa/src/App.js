@@ -1,25 +1,44 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
+function fetchAttendance() {
+  return fetch('/api/attendance').then(res => res.json());
+}
+
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      attendance: [],
+    };
+  }
+
+  componentDidMount() {
+    fetchAttendance().then(response => {
+      this.setState({
+        attendance: response,
+      });
+    });
+  }
+
   render() {
+    const { attendance } = this.state;
+
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        <ul>
+          {attendance.map(item => (
+            <li key={item._id}>
+              {new Date(item.date).toLocaleDateString('en-GB')} было {item.total} чел.
+              <ul>
+                {item.visitors.map(item => (
+                  <li>{item.name}</li>  
+                ))}
+                <li>Остальные: {item.others} чел.</li>
+              </ul>  
+            </li>
+          ))}
+        </ul>
       </div>
     );
   }
