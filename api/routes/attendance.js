@@ -1,30 +1,39 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 const router = express.Router();
 
-const attendanceSchema = new mongoose.Schema(
-  {
-    date: { type: Date, default: Date.now },
-    visitors: [{ type: Schema.Types.ObjectId, ref: 'Visitor' }],
-    others: { type: Number, default: 0 },
-  },
-  {
-    toJSON: { virtuals: true },
-  }
-);
-attendanceSchema.virtual('total').get(function () {
-  return this.visitors.length + this.others;
-});
-const Attendance = mongoose.model('Attendance', attendanceSchema);
+const Attendance = require('../models/attendance.model');
+const Visitor = require('../models/visitor.model');
 
-/* GET attendance */
+/* GET attendances list */
 router.get('/', function(req, res, next) {
-  Attendance.find().
-  populate('visitors', 'name').
-  exec(function (err, data) {
+  Attendance.find().populate('visitors', 'name').exec(function (err, data) {
     if (err) return console.error(err);
+    
     res.json(data);
+  })
+});
+
+
+/* GET attendance by ID */
+router.get('/:id', function(req, res, next) {
+  Visitor.find({ archived: false }, 'name', function(err, visitors) {
+    if (err) return console.error(err);
+
+    Attendance.findById(req.params.id, function (err, data) {
+      if (err) return console.error(err);
+      
+      const enrichedVisitors = visitors.map(visitor => {
+        return { 
+          ...visitor.toJSON(),
+          present: data.visitors.indexOf(visitor._id) !== -1
+        };
+      });
+
+      res.json({ 
+        ...data.toJSON(),
+        visitors: enrichedVisitors
+      });
+    })
   })
 });
 
@@ -34,28 +43,27 @@ router.post('/', function(req, res, next) {
 
   attendance.save(function (err, data) {
     if (err) return console.error(err);
+
     res.json(data);
   });
 });
 
 /* DELETE visitor */
 router.delete('/:id', function(req, res, next) {
-  const conditions = { _id: req.params.id };
-
-  Visitor.findOneAndDelete(conditions, function(err, visitor) {
+  Visitor.findByIdAndDelete(req.params.id, function(err, visitor) {
     if (err) return console.error(err);
+
     res.json(visitor);
   });
 });
 
 /* UPDATE visitor */
 router.put('/:id', function(req, res, next) {
-  const conditions = { _id: req.params.id };
-  const update = req.body;
   const options = { new: true };
 
-  Visitor.findOneAndUpdate(conditions, update, options, function(err, visitor) {
+  Visitor.findByIdAndUpdate(req.params.id, req.body, options, function(err, visitor) {
     if (err) return console.error(err);
+
     res.json(visitor);
   });
 });

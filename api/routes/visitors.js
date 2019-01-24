@@ -1,12 +1,7 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const router = express.Router();
 
-const visitorSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  archived: { type: Boolean, default: false },
-});
-const Visitor = mongoose.model('Visitor', visitorSchema);
+const Visitor = require('../models/visitor.model');
 
 /* GET visitors list */
 router.get('/', function(req, res, next) {
@@ -14,6 +9,7 @@ router.get('/', function(req, res, next) {
 
   Visitor.find(conditions, function (err, visitors) {
     if (err) return console.error(err);
+
     res.json(visitors);
   })
 });
@@ -24,28 +20,27 @@ router.post('/', function(req, res, next) {
 
   visitor.save(function (err, visitor) {
     if (err) return console.error(err);
+
     res.json(visitor);
   });
 });
 
 /* DELETE visitor */
 router.delete('/:id', function(req, res, next) {
-  const conditions = { _id: req.params.id };
-
-  Visitor.findOneAndDelete(conditions, function(err, visitor) {
+  Visitor.findByIdAndDelete(req.params.id, function(err, visitor) {
     if (err) return console.error(err);
+
     res.json(visitor);
   });
 });
 
 /* UPDATE visitor */
 router.put('/:id', function(req, res, next) {
-  const conditions = { _id: req.params.id };
-  const update = req.body;
   const options = { new: true };
 
-  Visitor.findOneAndUpdate(conditions, update, options, function(err, visitor) {
+  Visitor.findByIdAndUpdate(req.params.id, req.body, options, function(err, visitor) {
     if (err) return console.error(err);
+
     res.json(visitor);
   });
 });

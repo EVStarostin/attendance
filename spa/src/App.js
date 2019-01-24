@@ -1,44 +1,76 @@
 import React, { Component } from 'react';
+// import ListControls from './components/ListControls/ListControls';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Checkbox from '@material-ui/core/Checkbox';
+import TextField from '@material-ui/core/TextField';
 import './App.css';
 
-function fetchAttendance() {
-  return fetch('/api/attendance').then(res => res.json());
+// function fetchAttendance() {
+//   return fetch('/api/attendance').then(res => res.json());
+// }
+
+function fetchVisitors() {
+  return fetch('/api/visitors').then(res => res.json());
 }
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      attendance: [],
-    };
-  }
+  state = {
+    visitors: [],
+    checked: [],
+  };
 
   componentDidMount() {
-    fetchAttendance().then(response => {
+    fetchVisitors().then(response => {
       this.setState({
-        attendance: response,
+        visitors: response,
       });
     });
   }
 
+  handleToggle = value => () => {
+    const { checked } = this.state;
+    const currentIndex = checked.indexOf(value);
+    const newChecked = [...checked];
+
+    if (currentIndex === -1) {
+      newChecked.push(value);
+    } else {
+      newChecked.splice(currentIndex, 1);
+    }
+
+    this.setState({
+      checked: newChecked,
+    });
+  };
+
   render() {
-    const { attendance } = this.state;
+    const { visitors } = this.state;
 
     return (
       <div className="App">
-        <ul>
-          {attendance.map(item => (
-            <li key={item._id}>
-              {new Date(item.date).toLocaleDateString('en-GB')} было {item.total} чел.
-              <ul>
-                {item.visitors.map(item => (
-                  <li>{item.name}</li>  
-                ))}
-                <li>Остальные: {item.others} чел.</li>
-              </ul>  
-            </li>
+        <header className="DateContainer">
+          <TextField
+            id="date"
+            className="Date"
+            type="date"
+            defaultValue="2018-12-31"
+          />
+        </header>
+        <List className="List">
+          {visitors.map(item => (
+            <ListItem key={item._id} role={undefined} dense button onClick={this.handleToggle(item._id)}>
+              <Checkbox
+                checked={this.state.checked.indexOf(item._id) !== -1}
+                className="p0"
+                tabIndex={-1}
+                disableRipple
+              />
+              <ListItemText primary={item.name} />
+            </ListItem>
           ))}
-        </ul>
+        </List>
       </div>
     );
   }
