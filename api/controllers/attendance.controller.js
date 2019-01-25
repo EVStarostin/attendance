@@ -43,23 +43,3 @@ exports.addAttendance = function(req, res, next) {
     res.json(data);
   });
 };
-
-/* DELETE visitor */
-exports.deleteAttendance = function(req, res, next) {
-  Visitor.findByIdAndDelete(req.params.id, function(err, visitor) {
-    if (err) return console.error(err);
-
-    res.json(visitor);
-  });
-};
-
-/* UPDATE visitor */
-exports.updateAttendance = function(req, res, next) {
-  const options = { new: true };
-
-  Visitor.findByIdAndUpdate(req.params.id, req.body, options, function(err, visitor) {
-    if (err) return console.error(err);
-
-    res.json(visitor);
-  });
-};
